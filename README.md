@@ -12,7 +12,10 @@ Features:
 
 Runs entirely in the browser, storing data in local storage.
 
-Use it here: https://porjo.github.io/freshtube/
+Use it here: 
+https://fresh-tube.netlify.app/
+
+https://porjo.github.io/freshtube/
 
 ![Screenshot](https://porjo.github.io/freshtube/screenshot.jpg)
 
