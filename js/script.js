@@ -680,31 +680,110 @@ function open9xPlayerModal(videoUrl) {
     });
 }
 
+
+// Function to open MP3 player modal
+function openMP3PlayerModal(mp3Url, videoTitle) {
+    // Create modal container
+    var modalContainer = document.createElement("div");
+    modalContainer.className = "modal-container";
+
+    // Create title element
+    var title = document.createElement("h2");
+    title.textContent = videoTitle; // Set the video title
+    title.style.color = "white";
+    title.style.fontSize = "1.2em"; // Adjust font size as needed
+    title.style.marginBottom = "10px"; // Add margin to separate from audio tag
+
+    // Create audio element for playing MP3
+    var audio = document.createElement("audio");
+    audio.src = mp3Url;
+    audio.controls = true;
+
+    // Create div for title and audio
+    var contentDiv = document.createElement("div");
+    contentDiv.style.display = "block";
+
+    // Append title and audio elements to content div
+    contentDiv.appendChild(title);
+    contentDiv.appendChild(audio);
+
+    // Append content div to modal container
+    modalContainer.appendChild(contentDiv);
+
+    // Append modal container to body
+    document.body.appendChild(modalContainer);
+
+    // Apply modal styles
+    modalContainer.style.position = "fixed";
+    modalContainer.style.top = "50%";
+    modalContainer.style.left = "50%";
+    modalContainer.style.transform = "translate(-50%, -50%)";
+    modalContainer.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+    modalContainer.style.borderRadius = "10px";
+    modalContainer.style.padding = "20px";
+    modalContainer.style.width = "80%"; // Adjust width as needed
+    modalContainer.style.maxWidth = "400px"; // Set maximum width
+    modalContainer.style.textAlign = "center";
+    modalContainer.style.maxHeight = "40%"; // Limit maximum height
+
+    // Close modal when clicking outside the audio player
+    document.addEventListener("click", function(event) {
+        if (!modalContainer.contains(event.target)) {
+            document.body.removeChild(modalContainer);
+            document.body.style.overflow = ""; // Restore scrolling
+            document.removeEventListener("click", arguments.callee);
+        }
+    });
+    
+    // Prevent scrolling on the body while modal is open
+    document.body.style.overflow = "hidden";
+}
+
+// Function to retrieve video title based on the closest parent with a video ID
+function getVideoTitle(event) {
+    var currentElement = event.target;
+    while (currentElement) {
+        if (currentElement.classList.contains("video")) {
+            var videoTitleElement = currentElement.querySelector(".video_title");
+            if (videoTitleElement) {
+                return videoTitleElement.textContent.trim();
+            }
+        }
+        currentElement = currentElement.parentElement;
+    }
+    return null;
+}
+
 // Attach click event listener to thumbnail anchor tags
 document.addEventListener("click", function (event) {
-    // Check if the clicked element is a thumbnail anchor tag
-    if (event.target.closest(".video_thumb > a")) {
+    // Check if the clicked element is a thumbnail anchor tag within a video_thumb container
+    var isThumbnail = event.target.closest(".video_thumb > a");
+    if (isThumbnail) {
         event.preventDefault(); // Prevent the default behavior of opening the link
 
         // Get the URL of the clicked thumbnail
-        var videoClickURL = event.target.closest(".video_thumb > a").href;
+        var videoClickURL = isThumbnail.href;
 
-        // Check the data-option attribute of the selected button
-        var selectedOption = $("#vc_target").attr("placeholder");
-        
-        // If the selected option is 9x, open the 9x player modal
-        if (selectedOption === "9x Player") {
-            open9xPlayerModal(videoClickURL);
+        // Get the video title associated with the clicked thumbnail
+        var videoTitle = getVideoTitle(event);
+
+        // Check if the URL contains ".mp3"
+        if (videoClickURL.includes(".mp3")) {
+            openMP3PlayerModal(videoClickURL, videoTitle); // Open the MP3 player modal with title
         } else {
-            // Otherwise, open the default YouTube modal
-            openYoutubeModal(videoClickURL);
+            // Check the data-option attribute of the selected button
+            var selectedOption = $("#vc_target").attr("placeholder");
+            
+            // If the selected option is 9x, open the 9x player modal
+            if (selectedOption === "9x Player") {
+                open9xPlayerModal(videoClickURL);
+            } else {
+                // Otherwise, open the default YouTube modal
+                openYoutubeModal(videoClickURL);
+            }
         }
     }
 });
-
-
-
-
 
 
 }());

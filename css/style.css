@@ -276,4 +276,34 @@ footer, header, hgroup, menu, nav, section {
     max-width: 90%; /* Adjust the width as needed */
     max-height: 90vh; /* Adjust the height as needed */
 }
+audio::-webkit-media-controls-panel {
+    /* Mint green color for background */
+    background-color: #98FB98;
+    /* Pine green color for border */
+    border: 1px solid #01796F; /* Adjust border thickness as needed */
+}
+
+audio::-webkit-media-controls-play-button {
+    /* Mint green color for play button */
+    background-color: #98FB98;
+}
+
+audio::-webkit-media-controls-current-time-display,
+audio::-webkit-media-controls-time-remaining-display {
+    /* Mint green color for time display */
+    color: black;
+}
+
+audio::-webkit-media-controls-mute-button,
+audio::-webkit-media-controls-volume-slider {
+    /* Mint green color for volume controls */
+    background-color: #98FB98;
+}
+
+audio::-webkit-media-controls-seek-back-button,
+audio::-webkit-media-controls-seek-forward-button {
+    /* Mint green color for seek buttons */
+    background-color: #98FB98;
+}
+
 
