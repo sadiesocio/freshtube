@@ -20,3 +20,5 @@ https://porjo.github.io/freshtube/
 ![Screenshot](https://porjo.github.io/freshtube/screenshot.jpg)
 
 ![Screenshot](https://github.com/sadiesocio/freshtube/blob/master/fresh-tube-screenshot.png)
+
+![Screenshot](https://github.com/sadiesocio/freshtube/blob/master/fresh-tube-rss-screenshot.png)
