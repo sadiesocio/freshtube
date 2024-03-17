@@ -107,107 +107,116 @@ var nextcloudRe = /\/download\/?$/;
       //return Promise.reject(errMsg);
    }
 
-   function refresh() {
-      $("#error-box").hide();
-      key = $("#apikey").val();
-      if (key == '') {
-         errorBox('API key cannot be empty');
-         return;
-      }
-      ids = [];
-      var lines = '';
-      nextcloudURL = $("#nextcloud_url").val();
-      if (nextcloudURL != '') {
-         // Append /download to get raw file
-         if (nextcloudURL.match(nextcloudRe) === null) {
+ function refresh() {
+    $("#error-box").hide();
+    key = $("#apikey").val();
+    if (key == '') {
+        errorBox('API key cannot be empty');
+        return;
+    }
+    ids = [];
+    var lines = '';
+    nextcloudURL = $("#nextcloud_url").val();
+    if (nextcloudURL != '') {
+        // Append /download to get raw file
+        if (nextcloudURL.match(nextcloudRe) === null) {
             nextcloudURL += "/download";
-         }
-         $.when($.get(nextcloudURL)).then(function (data) {
+        }
+        $.when($.get(nextcloudURL)).then(function (data) {
             lines = data.split(/\n/);
             let lines2 = $("#video_urls").val().split(/\n/);
             lines.push(...lines2);
             let uLines = new Set(lines); // Set is unique
             _refresh(Array.from(uLines));
-         }, function (data) {
+        }, function (data) {
             errorBox('failed to fetch Nextcloud share link - check CORS headers')
-         });
-      } else {
-         lines = $("#video_urls").val().split(/\n/);
-         _refresh(lines);
-      }
-   }
+        });
+    } else {
+        lines = $("#video_urls").val().split(/\n/);
+        _refresh(lines);
+    }
+}
 
-   function _refresh(lines) {
-      $("#videos").html('');
+function _refresh(lines) {
+    $("#videos").html('');
 
-      if (typeof (Storage) !== "undefined") {
-         var lr = moment(localStorage.getItem("lastRefresh"));
-         if (lr) {
+    if (typeof (Storage) !== "undefined") {
+        var lr = moment(localStorage.getItem("lastRefresh"));
+        if (lr) {
             lastRefresh = moment(lr);
-         }
-         localStorage.setItem("lines", $("#video_urls").val());
-         localStorage.setItem("apikey", key);
-         localStorage.setItem("lastRefresh", moment().toISOString());
-         highlightNew = $("#highlight_new").is(":checked");
-         localStorage.setItem("highlightNew", highlightNew);
-         hideOldCheck = $("#hide_old_check").is(":checked");
-         localStorage.setItem("hideOldCheck", hideOldCheck);
-         hideOldDays = $("#hide_old_days").val();
-         localStorage.setItem("hideOldDays", hideOldDays);
-         hideFutureCheck = $("#hide_future_check").is(":checked");
-         localStorage.setItem("hideFutureCheck", hideFutureCheck);
-         hideFutureHours = $("#hide_future_hours").val();
-         localStorage.setItem("hideFutureHours", hideFutureHours);
-         hideTimeCheck = $("#hide_time_check").is(":checked");
-         localStorage.setItem("hideTimeCheck", hideTimeCheck);
-         hideTimeMins = $("#hide_time_mins").val();
-         localStorage.setItem("hideTimeMins", hideTimeMins);
-         videoClickTarget = $("#vc_target").val();
-         localStorage.setItem("videoClickTarget", videoClickTarget);
-         nextcloudURL = $("#nextcloud_url").val();
-         localStorage.setItem("nextcloudURL", nextcloudURL);
-      }
+        }
+        localStorage.setItem("lines", $("#video_urls").val());
+        localStorage.setItem("apikey", key);
+        localStorage.setItem("lastRefresh", moment().toISOString());
+        highlightNew = $("#highlight_new").is(":checked");
+        localStorage.setItem("highlightNew", highlightNew);
+        hideOldCheck = $("#hide_old_check").is(":checked");
+        localStorage.setItem("hideOldCheck", hideOldCheck);
+        hideOldDays = $("#hide_old_days").val();
+        localStorage.setItem("hideOldDays", hideOldDays);
+        hideFutureCheck = $("#hide_future_check").is(":checked");
+        localStorage.setItem("hideFutureCheck", hideFutureCheck);
+        hideFutureHours = $("#hide_future_hours").val();
+        localStorage.setItem("hideFutureHours", hideFutureHours);
+        hideTimeCheck = $("#hide_time_check").is(":checked");
+        localStorage.setItem("hideTimeCheck", hideTimeCheck);
+        hideTimeMins = $("#hide_time_mins").val();
+        localStorage.setItem("hideTimeMins", hideTimeMins);
+        videoClickTarget = $("#vc_target").val();
+        localStorage.setItem("videoClickTarget", videoClickTarget);
+        nextcloudURL = $("#nextcloud_url").val();
+        localStorage.setItem("nextcloudURL", nextcloudURL);
+    }
 
-      $.when.apply($, lines.map(function (line) {
-         if (line.trim() == "") {
+    $.when.apply($, lines.map(function (line) {
+        if (line.trim() == "") {
             return;
-         }
-         $("#settings").slideUp();
-         if (line.match(rssRe) !== null) {
-            return $.get(line).then(function (data) {
-               handleRSS(data);
-            }, errorBox);
-         } else {
+        }
+        $("#settings").slideUp();
+        if (line.match(rssRe) !== null) {
+            // Check if the line contains "feed"
+            if (line.includes("feed")) {
+                // Use the CORS proxy for URLs containing "feed"
+                return $.get('https://cors.zuperbolt.dev/' + line).then(function (data) {
+                    handleRSS(data);
+                }, errorBox);
+            } else {
+                return $.get(line).then(function (data) {
+                    handleRSS(data);
+                }, errorBox);
+            }
+        } else {
             var url = apiChannelURL + "&key=" + key;
             var chanMatches = line.match(channelRe);
             var userMatches = line.match(userRe);
             var channelURL = 'https://www.youtube.com/';
             if (chanMatches && chanMatches.length > 1) {
-               channelURL += 'channel/' + chanMatches[1];
-               url += "&id=" + chanMatches[1];
+                channelURL += 'channel/' + chanMatches[1];
+                url += "&id=" + chanMatches[1];
             } else if (userMatches && userMatches.length > 1) {
-               channelURL += 'user/' + userMatches[1];
-               url += "&forUsername=" + userMatches[1];
+                channelURL += 'user/' + userMatches[1];
+                url += "&forUsername=" + userMatches[1];
             } else {
-               id = line.trim();
-               if (id.length == 24) {
-                  url += "&id=" + id;
-               } else {
-                  url += "&forUsername=" + id;
-               }
+                id = line.trim();
+                if (id.length == 24) {
+                    url += "&id=" + id;
+                } else {
+                    url += "&forUsername=" + id;
+                }
             }
             return $.get(url).then(handleChannel, errorBox).then(function (data) {
-               handlePlaylist(channelURL, data);
+                handlePlaylist(channelURL, data);
             }, errorBox);
-         }
-      })).done(function () {
-         getDurations();
-         getLiveBroadcasts();
-         setTimeout(function () {
+        }
+    })).done(function () {
+        getDurations();
+        getLiveBroadcasts();
+        setTimeout(function () {
             hiddenItemsStatus();
-         }, 1000);
-      });
-   }
+        }, 1000);
+    });
+}
+
 
    function hiddenItemsStatus() {
       $(".channel").each(function () {
