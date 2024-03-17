@@ -107,115 +107,115 @@ var nextcloudRe = /\/download\/?$/;
       //return Promise.reject(errMsg);
    }
 
- function refresh() {
-    $("#error-box").hide();
-    key = $("#apikey").val();
-    if (key == '') {
-        errorBox('API key cannot be empty');
-        return;
-    }
-    ids = [];
-    var lines = '';
-    nextcloudURL = $("#nextcloud_url").val();
-    if (nextcloudURL != '') {
-        // Append /download to get raw file
-        if (nextcloudURL.match(nextcloudRe) === null) {
+   function refresh() {
+      $("#error-box").hide();
+      key = $("#apikey").val();
+      if (key == '') {
+         errorBox('API key cannot be empty');
+         return;
+      }
+      ids = [];
+      var lines = '';
+      nextcloudURL = $("#nextcloud_url").val();
+      if (nextcloudURL != '') {
+         // Append /download to get raw file
+         if (nextcloudURL.match(nextcloudRe) === null) {
             nextcloudURL += "/download";
-        }
-        $.when($.get(nextcloudURL)).then(function (data) {
+         }
+         $.when($.get(nextcloudURL)).then(function (data) {
             lines = data.split(/\n/);
             let lines2 = $("#video_urls").val().split(/\n/);
             lines.push(...lines2);
             let uLines = new Set(lines); // Set is unique
             _refresh(Array.from(uLines));
-        }, function (data) {
+         }, function (data) {
             errorBox('failed to fetch Nextcloud share link - check CORS headers')
-        });
-    } else {
-        lines = $("#video_urls").val().split(/\n/);
-        _refresh(lines);
-    }
-}
+         });
+      } else {
+         lines = $("#video_urls").val().split(/\n/);
+         _refresh(lines);
+      }
+   }
 
-function _refresh(lines) {
-    $("#videos").html('');
+   function _refresh(lines) {
+      $("#videos").html('');
 
-    if (typeof (Storage) !== "undefined") {
-        var lr = moment(localStorage.getItem("lastRefresh"));
-        if (lr) {
+      if (typeof (Storage) !== "undefined") {
+         var lr = moment(localStorage.getItem("lastRefresh"));
+         if (lr) {
             lastRefresh = moment(lr);
-        }
-        localStorage.setItem("lines", $("#video_urls").val());
-        localStorage.setItem("apikey", key);
-        localStorage.setItem("lastRefresh", moment().toISOString());
-        highlightNew = $("#highlight_new").is(":checked");
-        localStorage.setItem("highlightNew", highlightNew);
-        hideOldCheck = $("#hide_old_check").is(":checked");
-        localStorage.setItem("hideOldCheck", hideOldCheck);
-        hideOldDays = $("#hide_old_days").val();
-        localStorage.setItem("hideOldDays", hideOldDays);
-        hideFutureCheck = $("#hide_future_check").is(":checked");
-        localStorage.setItem("hideFutureCheck", hideFutureCheck);
-        hideFutureHours = $("#hide_future_hours").val();
-        localStorage.setItem("hideFutureHours", hideFutureHours);
-        hideTimeCheck = $("#hide_time_check").is(":checked");
-        localStorage.setItem("hideTimeCheck", hideTimeCheck);
-        hideTimeMins = $("#hide_time_mins").val();
-        localStorage.setItem("hideTimeMins", hideTimeMins);
-        videoClickTarget = $("#vc_target").val();
-        localStorage.setItem("videoClickTarget", videoClickTarget);
-        nextcloudURL = $("#nextcloud_url").val();
-        localStorage.setItem("nextcloudURL", nextcloudURL);
-    }
+         }
+         localStorage.setItem("lines", $("#video_urls").val());
+         localStorage.setItem("apikey", key);
+         localStorage.setItem("lastRefresh", moment().toISOString());
+         highlightNew = $("#highlight_new").is(":checked");
+         localStorage.setItem("highlightNew", highlightNew);
+         hideOldCheck = $("#hide_old_check").is(":checked");
+         localStorage.setItem("hideOldCheck", hideOldCheck);
+         hideOldDays = $("#hide_old_days").val();
+         localStorage.setItem("hideOldDays", hideOldDays);
+         hideFutureCheck = $("#hide_future_check").is(":checked");
+         localStorage.setItem("hideFutureCheck", hideFutureCheck);
+         hideFutureHours = $("#hide_future_hours").val();
+         localStorage.setItem("hideFutureHours", hideFutureHours);
+         hideTimeCheck = $("#hide_time_check").is(":checked");
+         localStorage.setItem("hideTimeCheck", hideTimeCheck);
+         hideTimeMins = $("#hide_time_mins").val();
+         localStorage.setItem("hideTimeMins", hideTimeMins);
+         videoClickTarget = $("#vc_target").val();
+         localStorage.setItem("videoClickTarget", videoClickTarget);
+         nextcloudURL = $("#nextcloud_url").val();
+         localStorage.setItem("nextcloudURL", nextcloudURL);
+      }
 
-    $.when.apply($, lines.map(function (line) {
-        if (line.trim() == "") {
+      $.when.apply($, lines.map(function (line) {
+         if (line.trim() == "") {
             return;
-        }
-        $("#settings").slideUp();
-        if (line.match(rssRe) !== null) {
+         }
+         $("#settings").slideUp();
+         if (line.match(rssRe) !== null) {
             // Check if the line contains "feed"
             if (line.includes("feed")) {
-                // Use the CORS proxy for URLs containing "feed"
-                return $.get('https://cors.zuperbolt.dev/' + line).then(function (data) {
-                    handleRSS(data);
-                }, errorBox);
+               // Use the CORS proxy for URLs containing "feed"
+               return $.get('https://cors.zuperbolt.dev/' + line).then(function (data) {
+                  handleRSS(data);
+               }, errorBox);
             } else {
-                return $.get(line).then(function (data) {
-                    handleRSS(data);
-                }, errorBox);
+               return $.get(line).then(function (data) {
+                  handleRSS(data);
+               }, errorBox);
             }
-        } else {
+         } else {
             var url = apiChannelURL + "&key=" + key;
             var chanMatches = line.match(channelRe);
             var userMatches = line.match(userRe);
             var channelURL = 'https://www.youtube.com/';
             if (chanMatches && chanMatches.length > 1) {
-                channelURL += 'channel/' + chanMatches[1];
-                url += "&id=" + chanMatches[1];
+               channelURL += 'channel/' + chanMatches[1];
+               url += "&id=" + chanMatches[1];
             } else if (userMatches && userMatches.length > 1) {
-                channelURL += 'user/' + userMatches[1];
-                url += "&forUsername=" + userMatches[1];
+               channelURL += 'user/' + userMatches[1];
+               url += "&forUsername=" + userMatches[1];
             } else {
-                id = line.trim();
-                if (id.length == 24) {
-                    url += "&id=" + id;
-                } else {
-                    url += "&forUsername=" + id;
-                }
+               id = line.trim();
+               if (id.length == 24) {
+                  url += "&id=" + id;
+               } else {
+                  url += "&forUsername=" + id;
+               }
             }
             return $.get(url).then(handleChannel, errorBox).then(function (data) {
-                handlePlaylist(channelURL, data);
+               handlePlaylist(channelURL, data);
             }, errorBox);
-        }
-    })).done(function () {
-        getDurations();
-        getLiveBroadcasts();
-        setTimeout(function () {
+         }
+      })).done(function () {
+         getDurations();
+         getLiveBroadcasts();
+         setTimeout(function () {
             hiddenItemsStatus();
-        }, 1000);
-    });
-}
+         }, 1000);
+      });
+   }
 
 
    function hiddenItemsStatus() {
@@ -372,7 +372,13 @@ function _refresh(lines) {
    }
 
    function getDurations() {
-      url = apiDurationURL + "&key=" + key + "&id=" + ids.join(",");
+      // Filter out lexfridman.com URLs from the list of IDs
+      var filteredIds = ids.filter(function (id) {
+         return !id.includes("lexfridman.com");
+      });
+
+      // Construct the URL without lexfridman.com IDs
+      var url = apiDurationURL + "&key=" + key + "&id=" + filteredIds.join(",");
       $.get(url, function (data) {
          $.each(data.items, function (k, v) {
             var duration = moment.duration(v.contentDetails.duration);
@@ -382,7 +388,7 @@ function _refresh(lines) {
             if (duration.hours() > 0) {
                durationStr = duration.hours() + ":" + durationStr;
             }
-            // don't output duration if value already exists e.g. if live broadcast
+            // Don't output duration if value already exists, e.g., if live broadcast
             if ($("#" + v.id + " .video_duration").text() !== "") {
                return;
             }
@@ -395,8 +401,15 @@ function _refresh(lines) {
       });
    }
 
+
    function getLiveBroadcasts() {
-      url = apiLiveBroadcastURL + "&key=" + key + "&id=" + ids.join(",");
+      // Filter out lexfridman.com URLs from the list of IDs
+      var filteredIds = ids.filter(function (id) {
+         return !id.includes("lexfridman.com");
+      });
+
+      // Construct the URL without lexfridman.com IDs
+      var url = apiLiveBroadcastURL + "&key=" + key + "&id=" + filteredIds.join(",");
       $.get(url, function (data) {
          $.each(data.items, function (k, v) {
             if (v.snippet.liveBroadcastContent === "upcoming") {
@@ -411,6 +424,7 @@ function _refresh(lines) {
          });
       });
    }
+
 
    function videoHTML(k, v) {
       if (hideOldCheck && moment().subtract(hideOldDays, "days").isAfter(v.snippet.publishedAt)) {
@@ -510,17 +524,16 @@ function _refresh(lines) {
    $("#youtubeBtn").click(function (event) {
       event.preventDefault(); // Prevent the default behavior of the button
       // Set videoClickTarget input text for Incogtube
-	  $("#vc_target").attr("placeholder", "YouTube");
+      $("#vc_target").attr("placeholder", "YouTube");
       $("#vc_target").val("");
    });
-   
+
    $("#9xBtn").click(function (event) {
       event.preventDefault(); // Prevent the default behavior of the button
       // Set videoClickTarget input text for Incogtube
-	  $("#vc_target").attr("placeholder", "9x Player");
+      $("#vc_target").attr("placeholder", "9x Player");
       $("#vc_target").val("");
    });
-   
 
 
    // Export settings without page refresh
@@ -538,7 +551,7 @@ function _refresh(lines) {
          hideTimeMins: $("#hide_time_mins").val(),
          videoClickTarget: $("#vc_target").val(),
          nextcloudURL: $("#nextcloud_url").val(),
-		 placeholderValue: $("#vc_target").attr("placeholder")
+         placeholderValue: $("#vc_target").attr("placeholder")
       };
       var settingsJSON = JSON.stringify(settingsData);
       var blob = new Blob([settingsJSON], {
@@ -581,7 +594,7 @@ function _refresh(lines) {
          $("#hide_time_mins").val(importedSettings.hideTimeMins);
          $("#vc_target").val(importedSettings.videoClickTarget);
          $("#nextcloud_url").val(importedSettings.nextcloudURL);
-		 $("#vc_target").attr("placeholder", importedSettings.placeholderValue);
+         $("#vc_target").attr("placeholder", importedSettings.placeholderValue);
          // Optionally, you can trigger an event to notify the user to save the settings
          // $("#save_button").click();
       };
@@ -603,196 +616,196 @@ function _refresh(lines) {
    });
 
 
-// Function to open YouTube video in modal
-function openYoutubeModal(videoUrl) {
-    // Get the YouTube video ID from the URL
-    var videoId = videoUrl.split("v=")[1];
+   // Function to open YouTube video in modal
+   function openYoutubeModal(videoUrl) {
+      // Get the YouTube video ID from the URL
+      var videoId = videoUrl.split("v=")[1];
 
-    // Construct the YouTube embed URL with autoplay parameter
-    var embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
+      // Construct the YouTube embed URL with autoplay parameter
+      var embedUrl = "https://www.youtube.com/embed/" + videoId + "?autoplay=1&mute=1";
 
-    // Create modal container
-    var modalContainer = document.createElement("div");
-    modalContainer.className = "modal-container";
+      // Create modal container
+      var modalContainer = document.createElement("div");
+      modalContainer.className = "modal-container";
 
-    // Create iframe for embedded YouTube video
-    var iframe = document.createElement("iframe");
-    iframe.src = embedUrl;
-    iframe.width = "560";
-    iframe.height = "315";
-    iframe.allowFullscreen = true;
-    iframe.setAttribute("frameborder", "0");
+      // Create iframe for embedded YouTube video
+      var iframe = document.createElement("iframe");
+      iframe.src = embedUrl;
+      iframe.width = "560";
+      iframe.height = "315";
+      iframe.allowFullscreen = true;
+      iframe.setAttribute("frameborder", "0");
 
-    // Append iframe to modal container
-    modalContainer.appendChild(iframe);
+      // Append iframe to modal container
+      modalContainer.appendChild(iframe);
 
-    // Append modal container to body
-    document.body.appendChild(modalContainer);
+      // Append modal container to body
+      document.body.appendChild(modalContainer);
 
-    // Prevent scrolling on the body while modal is open
-    document.body.style.overflow = "hidden";
+      // Prevent scrolling on the body while modal is open
+      document.body.style.overflow = "hidden";
 
-    // Close modal when clicking outside the iframe
-    modalContainer.addEventListener("click", function(event) {
-        if (event.target === modalContainer) {
+      // Close modal when clicking outside the iframe
+      modalContainer.addEventListener("click", function (event) {
+         if (event.target === modalContainer) {
             document.body.removeChild(modalContainer);
             document.body.style.overflow = ""; // Restore scrolling
-        }
-    });
+         }
+      });
 
-    // Center the modal vertically and horizontally
-    modalContainer.style.top = "50%";
-    modalContainer.style.left = "50%";
-    modalContainer.style.transform = "translate(-50%, -50%)";
-}
+      // Center the modal vertically and horizontally
+      modalContainer.style.top = "50%";
+      modalContainer.style.left = "50%";
+      modalContainer.style.transform = "translate(-50%, -50%)";
+   }
 
-// Function to open modal with 9xplayer
-function open9xPlayerModal(videoUrl) {
-    // Encode the YouTube video URL to base64 and remove "=="
-    var encodedUrl = btoa(videoUrl).replace(/==/g, '');
+   // Function to open modal with 9xplayer
+   function open9xPlayerModal(videoUrl) {
+      // Encode the YouTube video URL to base64 and remove "=="
+      var encodedUrl = btoa(videoUrl).replace(/==/g, '');
 
-    // Create modal container
-    var modalContainer = document.createElement("div");
-    modalContainer.className = "modal-container";
+      // Create modal container
+      var modalContainer = document.createElement("div");
+      modalContainer.className = "modal-container";
 
-    // Create iframe for 9xplayer with encoded YouTube URL
-    var iframe = document.createElement("iframe");
-    iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute("allowfullscreen", "");
-    iframe.setAttribute("scrolling", "no");
-    iframe.setAttribute("allow", "autoplay;fullscreen");
-    iframe.setAttribute("crossorigin", "anonymous");
-    iframe.setAttribute("playsinline", "");
-    iframe.style.position = "absolute";
-    iframe.style.height = "60vh"; // Adjust height as needed
-    iframe.style.width = "70vw"; // Adjust width as needed
-    iframe.style.left = "50%";
-    iframe.style.top = "50%";
-    iframe.style.transform = "translate(-50%, -50%)";
-    iframe.src = "https://9xplayer.com/?url=enc:" + encodedUrl + ",,&autoplay=true&encryption=true";
+      // Create iframe for 9xplayer with encoded YouTube URL
+      var iframe = document.createElement("iframe");
+      iframe.setAttribute("frameborder", "0");
+      iframe.setAttribute("allowfullscreen", "");
+      iframe.setAttribute("scrolling", "no");
+      iframe.setAttribute("allow", "autoplay;fullscreen");
+      iframe.setAttribute("crossorigin", "anonymous");
+      iframe.setAttribute("playsinline", "");
+      iframe.style.position = "absolute";
+      iframe.style.height = "60vh"; // Adjust height as needed
+      iframe.style.width = "70vw"; // Adjust width as needed
+      iframe.style.left = "50%";
+      iframe.style.top = "50%";
+      iframe.style.transform = "translate(-50%, -50%)";
+      iframe.src = "https://9xplayer.com/?url=enc:" + encodedUrl + ",,&autoplay=true&encryption=true";
 
-    // Append iframe to modal container
-    modalContainer.appendChild(iframe);
+      // Append iframe to modal container
+      modalContainer.appendChild(iframe);
 
-    // Append modal container to body
-    document.body.appendChild(modalContainer);
+      // Append modal container to body
+      document.body.appendChild(modalContainer);
 
-    // Prevent scrolling on the body while modal is open
-    document.body.style.overflow = "hidden";
+      // Prevent scrolling on the body while modal is open
+      document.body.style.overflow = "hidden";
 
-    // Close modal when clicking outside the iframe
-    modalContainer.addEventListener("click", function(event) {
-        if (event.target === modalContainer) {
+      // Close modal when clicking outside the iframe
+      modalContainer.addEventListener("click", function (event) {
+         if (event.target === modalContainer) {
             document.body.removeChild(modalContainer);
             document.body.style.overflow = ""; // Restore scrolling
-        }
-    });
-}
+         }
+      });
+   }
 
 
-// Function to open MP3 player modal
-function openMP3PlayerModal(mp3Url, videoTitle) {
-    // Create modal container
-    var modalContainer = document.createElement("div");
-    modalContainer.className = "modal-container";
+   // Function to open MP3 player modal
+   function openMP3PlayerModal(mp3Url, videoTitle) {
+      // Create modal container
+      var modalContainer = document.createElement("div");
+      modalContainer.className = "modal-container";
 
-    // Create title element
-    var title = document.createElement("h2");
-    title.textContent = videoTitle; // Set the video title
-    title.style.color = "white";
-    title.style.fontSize = "1.2em"; // Adjust font size as needed
-    title.style.marginBottom = "10px"; // Add margin to separate from audio tag
+      // Create title element
+      var title = document.createElement("h2");
+      title.textContent = videoTitle; // Set the video title
+      title.style.color = "white";
+      title.style.fontSize = "1.2em"; // Adjust font size as needed
+      title.style.marginBottom = "10px"; // Add margin to separate from audio tag
 
-    // Create audio element for playing MP3
-    var audio = document.createElement("audio");
-    audio.src = mp3Url;
-    audio.controls = true;
+      // Create audio element for playing MP3
+      var audio = document.createElement("audio");
+      audio.src = mp3Url;
+      audio.controls = true;
 
-    // Create div for title and audio
-    var contentDiv = document.createElement("div");
-    contentDiv.style.display = "block";
+      // Create div for title and audio
+      var contentDiv = document.createElement("div");
+      contentDiv.style.display = "block";
 
-    // Append title and audio elements to content div
-    contentDiv.appendChild(title);
-    contentDiv.appendChild(audio);
+      // Append title and audio elements to content div
+      contentDiv.appendChild(title);
+      contentDiv.appendChild(audio);
 
-    // Append content div to modal container
-    modalContainer.appendChild(contentDiv);
+      // Append content div to modal container
+      modalContainer.appendChild(contentDiv);
 
-    // Append modal container to body
-    document.body.appendChild(modalContainer);
+      // Append modal container to body
+      document.body.appendChild(modalContainer);
 
-    // Apply modal styles
-    modalContainer.style.position = "fixed";
-    modalContainer.style.top = "50%";
-    modalContainer.style.left = "50%";
-    modalContainer.style.transform = "translate(-50%, -50%)";
-    modalContainer.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-    modalContainer.style.borderRadius = "10px";
-    modalContainer.style.padding = "20px";
-    modalContainer.style.width = "80%"; // Adjust width as needed
-    modalContainer.style.maxWidth = "400px"; // Set maximum width
-    modalContainer.style.textAlign = "center";
-    modalContainer.style.maxHeight = "40%"; // Limit maximum height
+      // Apply modal styles
+      modalContainer.style.position = "fixed";
+      modalContainer.style.top = "50%";
+      modalContainer.style.left = "50%";
+      modalContainer.style.transform = "translate(-50%, -50%)";
+      modalContainer.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+      modalContainer.style.borderRadius = "10px";
+      modalContainer.style.padding = "20px";
+      modalContainer.style.width = "80%"; // Adjust width as needed
+      modalContainer.style.maxWidth = "400px"; // Set maximum width
+      modalContainer.style.textAlign = "center";
+      modalContainer.style.maxHeight = "40%"; // Limit maximum height
 
-    // Close modal when clicking outside the audio player
-    document.addEventListener("click", function(event) {
-        if (!modalContainer.contains(event.target)) {
+      // Close modal when clicking outside the audio player
+      document.addEventListener("click", function (event) {
+         if (!modalContainer.contains(event.target)) {
             document.body.removeChild(modalContainer);
             document.body.style.overflow = ""; // Restore scrolling
             document.removeEventListener("click", arguments.callee);
-        }
-    });
-    
-    // Prevent scrolling on the body while modal is open
-    document.body.style.overflow = "hidden";
-}
+         }
+      });
 
-// Function to retrieve video title based on the closest parent with a video ID
-function getVideoTitle(event) {
-    var currentElement = event.target;
-    while (currentElement) {
-        if (currentElement.classList.contains("video")) {
+      // Prevent scrolling on the body while modal is open
+      document.body.style.overflow = "hidden";
+   }
+
+   // Function to retrieve video title based on the closest parent with a video ID
+   function getVideoTitle(event) {
+      var currentElement = event.target;
+      while (currentElement) {
+         if (currentElement.classList.contains("video")) {
             var videoTitleElement = currentElement.querySelector(".video_title");
             if (videoTitleElement) {
-                return videoTitleElement.textContent.trim();
+               return videoTitleElement.textContent.trim();
             }
-        }
-        currentElement = currentElement.parentElement;
-    }
-    return null;
-}
+         }
+         currentElement = currentElement.parentElement;
+      }
+      return null;
+   }
 
-// Attach click event listener to thumbnail anchor tags
-document.addEventListener("click", function (event) {
-    // Check if the clicked element is a thumbnail anchor tag within a video_thumb container
-    var isThumbnail = event.target.closest(".video_thumb > a");
-    if (isThumbnail) {
-        event.preventDefault(); // Prevent the default behavior of opening the link
+   // Attach click event listener to thumbnail anchor tags
+   document.addEventListener("click", function (event) {
+      // Check if the clicked element is a thumbnail anchor tag within a video_thumb container
+      var isThumbnail = event.target.closest(".video_thumb > a");
+      if (isThumbnail) {
+         event.preventDefault(); // Prevent the default behavior of opening the link
 
-        // Get the URL of the clicked thumbnail
-        var videoClickURL = isThumbnail.href;
+         // Get the URL of the clicked thumbnail
+         var videoClickURL = isThumbnail.href;
 
-        // Get the video title associated with the clicked thumbnail
-        var videoTitle = getVideoTitle(event);
+         // Get the video title associated with the clicked thumbnail
+         var videoTitle = getVideoTitle(event);
 
-        // Check if the URL contains ".mp3"
-        if (videoClickURL.includes(".mp3")) {
+         // Check if the URL contains ".mp3"
+         if (videoClickURL.includes(".mp3")) {
             openMP3PlayerModal(videoClickURL, videoTitle); // Open the MP3 player modal with title
-        } else {
+         } else {
             // Check the data-option attribute of the selected button
             var selectedOption = $("#vc_target").attr("placeholder");
-            
+
             // If the selected option is 9x, open the 9x player modal
             if (selectedOption === "9x Player") {
-                open9xPlayerModal(videoClickURL);
+               open9xPlayerModal(videoClickURL);
             } else {
-                // Otherwise, open the default YouTube modal
-                openYoutubeModal(videoClickURL);
+               // Otherwise, open the default YouTube modal
+               openYoutubeModal(videoClickURL);
             }
-        }
-    }
-});
+         }
+      }
+   });
 
 
 }());

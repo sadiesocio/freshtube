@@ -39,7 +39,9 @@
                <input type="checkbox" id='highlight_new' value=1 checked> highlight new videos (since last refresh)<br>
             </div>
             <div class="form-group">
-               <label for="hide_group">Hide Videos</label>
+               <input type="checkbox" id="hide_group">
+				<label for="hide_group">Hide Videos</label>
+
                <div id="hide_group" class="input-group">
                   <input type="checkbox" id='hide_old_check'> older than <input id="hide_old_days" type="number" size=3 value="7" min=1 /> days<br>
                   <input type="checkbox" id='hide_future_check'> screening &gt; <input id="hide_future_hours" type="number" size=3 value="2" min=1 /> hours in the future<br>
