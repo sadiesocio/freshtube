@@ -177,7 +177,7 @@ var nextcloudRe = /\/download\/?$/;
             // Check if the line contains "feed"
             if (line.includes("feed")) {
                // Use the CORS proxy for URLs containing "feed"
-               return $.get('https://cors.zuperbolt.dev/' + line).then(function (data) {
+               return $.get('https://proxy.sadankwt.com' + line).then(function (data) {
                   handleRSS(data);
                }, errorBox);
             } else {
